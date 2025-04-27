@@ -16,7 +16,7 @@ def extract_pathogenic_variants():
     print("Extracting pathogenic variants...")
     
     pathogenic_variants = []
-    with gzip.open('variant_summary.txt.gz', mode='rt') as file:
+    with gzip.open('C:\\Users\\rogue\\PantherHack2025\\PantherHack25\\data\\variant_summary.txt.gz', mode='rt') as file:
         reader = csv.DictReader(file, delimiter='\t')
         for row in reader:
             if "pathogenic" in row["ClinicalSignificance"].lower():
@@ -37,7 +37,7 @@ def extract_pathogenic_variants():
     return pathogenic_variants
 
 def save_variants(variants):
-    output_file = "pathogenic_variants.csv"
+    output_file = "pathogenic_variants_sorted.csv"
     print(f"Saving to {output_file}...")
     keys = variants[0].keys()
     with open(output_file, 'w', newline='') as f:
@@ -49,6 +49,8 @@ def save_variants(variants):
 def main():
     # download_clinvar_data()
     variants = extract_pathogenic_variants()
+    # 🔥 Sort variants by Chromosome then Start
+    variants.sort(key=lambda v: (int(v["Chromosome"]) if v["Chromosome"].isdigit() else float('inf')))
     save_variants(variants)
 
 if __name__ == "__main__":
