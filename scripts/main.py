@@ -87,21 +87,27 @@ def check_disorders(dna_sequence):
             "pattern": "CAG",
             "min_repeats": 36,  # pathological threshold
             "repeats": True,
-            "MID":False
+            "MID":False,
+            "Location": null,
+            "gene": null
         },
         {
             "name": "Fragile X Syndrome",
             "pattern": "CGG",
             "min_repeats": 200,
             "repeats": True,
-            "MID":False
+            "MID":False,
+            "Location": null,
+            "gene": null
         },
         {
             "name": "Myotonic Dystrophy (Type 1)",
             "pattern": "CTG",
             "min_repeats": 50,
             "repeats": True,
-            "MID":False
+            "MID":False,
+            "Location": null,
+            "gene": null
 
         },
         {
@@ -109,24 +115,35 @@ def check_disorders(dna_sequence):
             "pattern": "GTG",  # GTG is the mutation (instead of GAG)
             "min_repeats": 1,
             "repeats": True,
-            "MID":False
+            "MID":False,
+            "Location": null,
+            "gene": null
         },
         {
             "name": "Tay-Sachs Disease",
             "pattern": "TATC",
             "min_repeats": 1,
             "repeats": True,
-            "MID":False
+            "MID":False,
+            "Location": null,
+            "gene": null
         },
         {
             "name": "Cystic Fibrosis (ΔF508)",
-            "pattern": "TTT",  # Deletion of TTT (phenylalanine)
+            "pattern": "TTC",  # Deletion of TTT (phenylalanine)
             "min_repeats": 0,  # absence indicates mutation, special case
             "repeats": True,
-            "MID":False
+            "MID":False,
+            "Location": 508,
+            "gene": "CFTR"
         },
-            # "name": "Duchenne Muscular Dystrophy (DMD)",
-            # "pattern": ""
+            "name": "Duchenne Muscular Dystrophy (DMD)",
+            "pattern": "",
+            "min_repeats": ,
+            "repeats": False,
+            "MID": True,
+            "Location": 45-55,
+            "gene": "Xp21.2"
     ]
 
     findings = []
