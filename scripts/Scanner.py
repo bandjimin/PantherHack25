@@ -10,16 +10,66 @@ import re
 #                 sequence += line.strip()
 #     return sequence.upper()
 
-def parse_mutation_name(mutation_name):
-    # Regular expression to capture the coordinates
-    match = re.search(r'c\.(\d+)_?(\d+)', mutation_name)
-    
-    if match:
-        start = int(match.group(1))  # First captured group is the start position
-        end = int(match.group(2))    # Second captured group is the end position
-        return start, end
+import re
+
+def parse_mutation_name(mutation_name, mutation_type):
+    """
+    Parses the mutation name and returns the start and end coordinates.
+    Additionally, for Indels, it will return the inserted sequence.
+    """
+
+    # Case 1: Single Nucleotide Variant (SNV)
+    if mutation_type == 'single nucleotide variant':
+        # Case 1.1: Standard SNV (e.g., c.694C>T, c.1234A>G)
+        match = re.search(r'c\.(\d+)([A-Za-z])>([A-Za-z])', mutation_name)
+        if match:
+            start = int(match.group(1))  # Start position (e.g., 694 or 1234)
+            ref_allele = match.group(2)  # Reference allele (e.g., C or A)
+            alt_allele = match.group(3)  # Alternate allele (e.g., T or G)
+            return start, start, ref_allele, alt_allele
+
+        # Case 1.2: Splice site mutation (e.g., c.700+4G>T, c.581-176A>T)
+        match = re.search(r'c\.(\d+)([+-]\d+)([A-Za-z])>([A-Za-z])', mutation_name)
+        if match:
+            exon_position = int(match.group(1))  # Exon base
+            splice_offset = int(match.group(2))  # +4 or -176 (converted to int)
+            final_position = exon_position + splice_offset  # Compute final position
+            ref_allele = match.group(3)
+            alt_allele = match.group(4)
+            return final_position, final_position, ref_allele, alt_allele
+        else:
+            return -1, -1, -1 , -1
+
+    # Case 2: Insertion (Indel)
+    elif mutation_type == 'Indel':
+        # Regular expression for Indels (e.g., c.80_83delinsTGCTGTAAACTGTAACTGTAAA)
+        match = re.search(r'c\.(\d+)_?(\d+)(delins[A-Za-z]+)', mutation_name)
+        if match:
+            start = int(match.group(1))  # Start position (e.g., 80)
+            end = int(match.group(2))    # End position (e.g., 83)
+            inserted_sequence = match.group(3)[5:]  # Get the inserted bases after 'delins'
+            return start, end, inserted_sequence
+        else:
+            return -1, -1, -1
+
+    # Case 3: Deletion (e.g., c.1234_1235del)
+    elif mutation_type == 'Deletion':
+            match = re.search(r'c\.(\d+[+-]?\d*)_(\d+[+-]?\d*)del', mutation_name)
+            if match:
+                start = match.group(1)  # '361-5'
+                end = match.group(2)    # '361-1'
+
+                # Now, remove '+' or '-' for easier processing
+                start_clean = int(re.sub(r'[+-]', '', start))
+                end_clean = int(re.sub(r'[+-]', '', end))
+
+                return start_clean, end_clean  # No sequence for deletion
+            else:
+                return -1, -1
+
     else:
-        raise ValueError("Mutation name does not contain valid coordinates.")
+        raise ValueError(f"Mutation type {mutation_type} is not recognized.")
+
 
 def extract_sequence(fasta_path, start, end):
     """
@@ -70,20 +120,27 @@ def analyze_variants(fasta_path, variants, chromosome_input):
     for variant in variants:
         if variant['Chromosome'] == chromosome_input:
             # Check if the variant matches with the patient's DNA sequence (simplified matching)
+            mutation_name = variant['Name'].strip()
             mutation_type = variant['Type'].strip()  # Remove extra spaces if any
             if mutation_type == "Indel":
-                    
+                start_position, end_position, new_sequence,  = parse_mutation_name(mutation_name, mutation_type)
+                if start_position == -1 or end_position == -1 or new_sequence == -1:
+                    continue
             elif mutation_type == "Deletion":
-                        
-            elif mutation_type == "Deletion":
-                        
+                start_position, end_position  = parse_mutation_name(mutation_name, mutation_type)
+                if start_position == -1 or end_position == -1:
+                    continue
+            elif mutation_type == "single nucleotide variant":
+                start_position, end_position, ref_allele, alt_allele  = parse_mutation_name(mutation_name, mutation_type)
+                if start_position == -1 or end_position == -1 or ref_allele == -1 or alt_allele == -1:
+                    continue
             else: continue
-            mutation_name = variant['Name'].strip()
-            start_position, end_position = parse_mutation_name(mutation_name)
-            print("Loading patient DNA...")
-            print(variant["Chromosome"])
+            
+            
+            # print("Loading patient DNA...")
+            # print(variant["Chromosome"])
             extracted_sequence = extract_sequence(fasta_path, start_position, end_position)
-            print(extracted_sequence)
+            # print(extracted_sequence)
             gene_symbol = variant['GeneSymbol'].strip()
 
             # Example logic to simulate DNA testing (this could be more complex)
@@ -116,12 +173,12 @@ def main():
 
     print("Analyzing for mutations...")
     findings = analyze_variants(fasta_path, variants, chromosome_input)
-    # if findings:
-    #     print(f"\nMutations found for Chromosome {chromosome_input}:")
-    #     for finding in findings:
-    #         print(finding)
-    # else:
-    #     print(f"\nNo mutations found for Chromosome {chromosome_input}.")
+    if findings:
+        print(f"\nMutations found for Chromosome {chromosome_input}:")
+        for finding in findings:
+            print(finding)
+    else:
+        print(f"\nNo mutations found for Chromosome {chromosome_input}.")
 
 
 if __name__ == "__main__":
