@@ -71,6 +71,13 @@ def analyze_variants(fasta_path, variants, chromosome_input):
         if variant['Chromosome'] == chromosome_input:
             # Check if the variant matches with the patient's DNA sequence (simplified matching)
             mutation_type = variant['Type'].strip()  # Remove extra spaces if any
+            if mutation_type == "Indel":
+                    
+            elif mutation_type == "Deletion":
+                        
+            elif mutation_type == "Deletion":
+                        
+            else: continue
             mutation_name = variant['Name'].strip()
             start_position, end_position = parse_mutation_name(mutation_name)
             print("Loading patient DNA...")
