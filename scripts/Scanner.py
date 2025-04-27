@@ -126,9 +126,21 @@ def analyze_variants(fasta_path, variants, chromosome_input):
             mutation_name = variant['Name'].strip()
             mutation_type = variant['Type'].strip()  # Remove extra spaces if any
             if mutation_type == "Indel":
-                start_position, end_position, new_sequence,  = parse_mutation_name(mutation_name, mutation_type)
-                if start_position == -1 or end_position == -1 or new_sequence == -1:
+                # Takes the necessary information of start and stop of the 
+                start_position = variant['Start'].strip()
+                end_position = variant['Stop'].strip()
+                new_sequence = variant['AlternateAllele'].strip()
+                # Only checks for mutation if the insert section, start, and stop variables are known
+                if start_position == -1 or stop_position == -1 or new_sequence == 'na':
                     continue
+                # Assurance for no out of bounds error for the string
+                if len(patient_sequence) >= end_position:
+                    # Takes the sequence from the chromosome looking specifically at the start and stop sections
+                    if new_sequence in patient_sequence[start_position-1: end_position]:
+                        '''
+                        Put stuff into findings
+                        '''
+                # else there is no mutation present and the loop can continue
             elif mutation_type == "Deletion":
                 start_position, end_position  = parse_mutation_name(mutation_name, mutation_type)
                 if start_position == -1 or end_position == -1:
@@ -155,8 +167,7 @@ def analyze_variants(fasta_path, variants, chromosome_input):
                     'MutationName': mutation_name,
                     'Position': variant['Start'],
                     'Condition': variant['Condition'],
-                    'ClinicalSignificance': variant['ClinicalSignificance'],
-                    # "Extracted_Sequence": extracted_sequence
+                    'ClinicalSignificance': variant['ClinicalSignificance']
                 })
 
     return findings
