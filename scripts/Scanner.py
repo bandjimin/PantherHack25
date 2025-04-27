@@ -126,17 +126,25 @@ def analyze_variants(fasta_path, variants, chromosome_input):
             mutation_name = variant['Name'].strip()
             mutation_type = variant['Type'].strip()  # Remove extra spaces if any
             if mutation_type == "Indel":
-                # Takes the necessary information of start and stop of the 
+                # Parse the name, not using the s & e, but if alternate allele not available, then insert_sequence is valuable
+                s, e, ins_sequence  = parse_mutation_name(mutation_name, mutation_type)
                 start_position = variant['Start']
                 end_position = variant['Stop']
                 new_sequence = variant['AlternateAllele'].strip()
+                
                 # Only checks for mutation if the insert section, start, and stop variables are known
-                if start_position == -1 or end_position == -1 or new_sequence == 'na':
+                if start_position == -1 or end_position == -1 or (new_sequence == 'na' and ins_sequence == -1):
                     continue
+                    
                 # Assurance for no out of bounds error for the string
                 if len(patient_sequence) >= end_position:
+                    # if new_sequence == 'na' use ins_sequence
+                    if new_sequence == 'na':
+                        new_or_ins_sequence = ins_sequence
+                    else:
+                        new_or_ins_sequence = new_sequence
                     # Takes the sequence from the chromosome looking specifically at the start and stop sections
-                    if new_sequence in patient_sequence[start_position-1: end_position]:
+                    if new_or_ins_sequence in patient_sequence[start_position-1: end_position]:
                         '''
                         Put stuff into findings
                         '''
