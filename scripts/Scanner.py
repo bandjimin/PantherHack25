@@ -127,11 +127,11 @@ def analyze_variants(fasta_path, variants, chromosome_input):
             mutation_type = variant['Type'].strip()  # Remove extra spaces if any
             if mutation_type == "Indel":
                 # Takes the necessary information of start and stop of the 
-                start_position = variant['Start'].strip()
-                end_position = variant['Stop'].strip()
+                start_position = variant['Start']
+                end_position = variant['Stop']
                 new_sequence = variant['AlternateAllele'].strip()
                 # Only checks for mutation if the insert section, start, and stop variables are known
-                if start_position == -1 or stop_position == -1 or new_sequence == 'na':
+                if start_position == -1 or end_position == -1 or new_sequence == 'na':
                     continue
                 # Assurance for no out of bounds error for the string
                 if len(patient_sequence) >= end_position:
