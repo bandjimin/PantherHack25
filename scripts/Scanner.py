@@ -1,16 +1,14 @@
 import csv
 import re
 
-# def load_fasta_sequence(fasta_path):
-#     """Load DNA sequence from a FASTA file, skipping header."""
-#     sequence = ''
-#     with open(fasta_path, 'r') as file:
-#         for line in file:
-#             if not line.startswith('>'):
-#                 sequence += line.strip()
-#     return sequence.upper()
-
-import re
+def load_fasta_sequence(fasta_path):
+    """Loads the whole FASTA sequence into one string."""
+    sequence_lines = []
+    with open(fasta_path, 'r') as file:
+        for line in file:
+            if not line.startswith('>'):
+                sequence_lines.append(line.strip())
+    return ''.join(sequence_lines)
 
 def parse_mutation_name(mutation_name, mutation_type):
     """
@@ -117,6 +115,11 @@ def analyze_variants(fasta_path, variants, chromosome_input):
     findings = []
 
     # Loop through the variants
+
+    print("Loading patient DNA sequence into memory...")
+    patient_sequence = load_fasta_sequence(fasta_path)
+    print(f"Sequence loaded: {len(patient_sequence)} bases")
+
     for variant in variants:
         if variant['Chromosome'] == chromosome_input:
             # Check if the variant matches with the patient's DNA sequence (simplified matching)
@@ -139,7 +142,8 @@ def analyze_variants(fasta_path, variants, chromosome_input):
             
             # print("Loading patient DNA...")
             # print(variant["Chromosome"])
-            extracted_sequence = extract_sequence(fasta_path, start_position, end_position)
+            # extracted_sequence = extract_sequence(fasta_path, start_position, end_position)
+            extracted_sequence = patient_sequence[start_position-1:end_position]
             # print(extracted_sequence)
             gene_symbol = variant['GeneSymbol'].strip()
 
@@ -162,7 +166,7 @@ def analyze_variants(fasta_path, variants, chromosome_input):
 def main():
     chromosome_input = input("Enter the gene being presented: ")
     fasta_path = input("Enter Patient Sequence File: ")
-    variants_csv_path = "C:\\Users\\rogue\\PantherHack2025\\PantherHack25\\outputs\\pathogenic_variants.csv"
+    variants_csv_path = "C:\\Users\\rogue\\PantherHack2025\\PantherHack25\\outputs\\pathogenic_variants_sorted.csv"
 
     print("Loading patient DNA...")
     # dna_sequence = load_fasta_sequence(fasta_path)
