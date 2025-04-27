@@ -129,7 +129,8 @@ def analyze_variants(fasta_path, variants, chromosome_input):
                 # Parse the name, not using the s & e, but if alternate allele not available, then insert_sequence is valuable
                 s, e, ins_sequence  = parse_mutation_name(mutation_name, mutation_type)
                 start_position = variant['Start']
-                end_position = variant['Stop']
+                # the end is the start position
+                end_position = start_position + (e - s)
                 new_sequence = variant['AlternateAllele'].strip()
                 
                 # Only checks for mutation if the insert section, start, and stop variables are known
